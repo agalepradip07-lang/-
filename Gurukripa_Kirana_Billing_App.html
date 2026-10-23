@@ -1,0 +1,267 @@
+<!doctype html>
+<html lang="mr">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#174a35">
+<title>श्री गुरुकृपा किराणा स्टोअर्स</title>
+<style>
+:root{--green:#174a35;--green2:#21694b;--bg:#f4f7f5;--line:#d7e2dc;--text:#17231d;--muted:#5d6d64;--orange:#a75a08}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:16px system-ui,-apple-system,"Noto Sans Devanagari",sans-serif}
+header{background:var(--green);color:white;padding:18px 16px 16px;position:sticky;top:0;z-index:3;box-shadow:0 2px 8px #0002}
+h1{font-size:21px;margin:0 0 4px}header p{margin:0;font-size:13px;opacity:.9}
+main{max-width:760px;margin:auto;padding:14px 12px 38px}.card{background:white;border:1px solid var(--line);border-radius:15px;padding:14px;margin-bottom:12px;box-shadow:0 2px 6px #143b2510}
+h2{font-size:18px;margin:0 0 12px}.row{display:flex;gap:8px;align-items:center}.row>*{min-width:0;flex:1}
+input,select,button,textarea{font:inherit;border-radius:10px;border:1px solid #c6d4cc;padding:11px;background:white;color:var(--text);width:100%}
+button{border:0;background:var(--green);color:white;font-weight:650;cursor:pointer}button.secondary{background:#e7f0eb;color:var(--green);border:1px solid #cbded2}button.warn{background:#fff0dc;color:#784100;border:1px solid #f2d1a5}
+button:disabled{opacity:.45}.tabs{display:flex;gap:7px;overflow:auto;margin-bottom:12px}.tabs button{white-space:nowrap;flex:1;padding:10px 8px}.tabs button.active{background:var(--green2)}
+.small{font-size:13px;color:var(--muted)}.notice{padding:10px;border-radius:10px;background:#fff3d4;color:#674400;font-size:13px;margin-top:8px}
+.product{border:1px solid var(--line);border-radius:11px;padding:11px;margin-top:8px;display:flex;gap:8px;align-items:center}
+.product .info{flex:1}.product strong{display:block}.price{font-weight:750;color:var(--green)}.product button{width:auto;min-width:72px;padding:9px}
+.line{display:flex;gap:8px;align-items:center;border-bottom:1px solid #e8eeea;padding:10px 0}.line .desc{flex:1}.line input{width:70px;flex:0 0 70px;padding:7px}.line button{width:38px;flex:0 0 38px;padding:7px;background:#fbe9e7;color:#9c251a}
+.total{font-size:24px;font-weight:800;text-align:right;color:var(--green);padding:10px 0}
+.hidden{display:none!important}.footer{font-size:12px;color:var(--muted);text-align:center;padding:8px}
+label{font-size:13px;color:var(--muted);display:block;margin:7px 0 4px}
+@media(min-width:600px){main{padding-top:20px}.product{padding:13px}}
+</style>
+</head>
+<body>
+<header><h1>श्री गुरुकृपा किराणा स्टोअर्स</h1><p>मराठी बिलिंग • स्थानिक दरपत्रक • रिटेल / होलसेल</p></header>
+<main>
+<div class="tabs">
+<button class="active" data-tab="billing">बिलिंग</button>
+<button class="secondary" data-tab="rates">दरपत्रक</button>
+<button class="secondary" data-tab="purchase">खरेदी दर</button>
+<button class="secondary" data-tab="history">बिल इतिहास</button>
+</div>
+<section id="billing">
+<div class="card">
+<h2>नवीन बिल</h2>
+<label>विक्री प्रकार</label><select id="saleType"><option value="retail">रिटेल</option><option value="wholesale">होलसेल</option></select>
+<div class="row" style="margin-top:10px"><button id="voiceBtn">🎙 मराठीत बोला</button><button class="secondary" id="clearSearch">शोध पुसा</button></div>
+<label>वस्तूचे नाव (टाइप करा किंवा आवाज वापरा)</label><input id="search" placeholder="उदा. तूर डाळ, सनी फिनाइल">
+<div class="small" style="margin-top:6px">आवाजासाठी फोनवरील speech service आवश्यक असू शकते. सर्वात खात्रीचा पर्याय: कीबोर्डवरील मायक्रोफोन.</div>
+<div id="results"></div>
+<div id="voiceStatus" class="small" aria-live="polite"></div>
+<div class="notice">प्रत्येक शोध परिणामात पॅकिंग/वजन आणि लागू दर दिसेल. एकाच वस्तूचे अनेक पॅक असल्यास योग्य पॅकिंग असलेली ओळ निवडा.</div>
+</div>
+<div class="card">
+<h2>बिलातील वस्तू</h2><div id="cart"><p class="small">अजून वस्तू जोडलेल्या नाहीत.</p></div>
+<div class="total" id="total">एकूण: ₹0</div>
+<div class="row"><button id="saveBill">बिल जतन करा</button><button class="secondary" id="shareBill">WhatsApp / शेअर</button></div>
+<div class="row" style="margin-top:8px"><button class="secondary" id="printBill">प्रिंट करा</button><button class="warn" id="emptyBill">बिल रिकामे करा</button></div>
+<div class="notice">अज्ञात दर असल्यास वस्तू बिलात जोडली जाणार नाही. बिल जतन करण्यापूर्वी वस्तू, प्रमाण आणि दर तपासा.</div>
+</div>
+</section>
+<section id="rates" class="hidden">
+<div class="card"><h2>वस्तूंचे दरपत्रक</h2>
+<label>वस्तू शोधा</label><input id="rateSearch" placeholder="वस्तूचे नाव">
+<label>दराचा प्रकार</label><select id="rateType"><option value="retail">रिटेल</option><option value="wholesale">होलसेल</option></select>
+<div id="rateList"></div></div>
+</section>
+<section id="purchase" class="hidden">
+<div class="card"><h2>खरेदी खर्च</h2><p class="small">खरेदी खर्च विक्रीदरापासून स्वतंत्र आहे. फक्त नोंदवलेला खर्च दाखवला आहे.</p><div id="purchaseList"></div>
+<div class="notice">खरेदी दर नसलेल्या वस्तूंचा खर्च रिकामा/अज्ञात समजावा; विक्रीदरावरून खरेदी खर्च ठरवलेला नाही.</div></div>
+</section>
+<section id="history" class="hidden">
+<div class="card"><h2>या फोनवरील जतन केलेली बिले</h2><div class="small">बिले या ब्राउझरच्या स्थानिक संचयात राहतात. ब्राउझरचा डेटा पुसल्यास बिले नष्ट होऊ शकतात.</div><div id="historyList"></div><button class="secondary" id="exportBills" style="margin-top:10px">बिल इतिहास JSON म्हणून निर्यात</button></div>
+</section>
+<div class="footer">स्टॉक व ग्राहक उधारी समाविष्ट नाही • दर बदलण्यापूर्वी पडताळणी करा</div>
+</main>
+<script>
+const PRODUCTS = [{"name": "तूर डाळ", "category": "डाळी/धान्य", "pack": "1 kg", "retail": 140, "wholesale": null, "purchase": null, "note": ""}, {"name": "मूग", "category": "डाळी/धान्य", "pack": "1 kg", "retail": 120, "wholesale": null, "purchase": null, "note": ""}, {"name": "मसूर", "category": "डाळी/धान्य", "pack": "1 kg", "retail": 90, "wholesale": null, "purchase": null, "note": ""}, {"name": "चना डाळ", "category": "डाळी/धान्य", "pack": "1 kg", "retail": 100, "wholesale": null, "purchase": null, "note": "नवीनतम रिटेल दर"}, {"name": "सोयाबीन", "category": "डाळी/धान्य", "pack": "1 kg", "retail": 120, "wholesale": null, "purchase": null, "note": ""}, {"name": "चवळी", "category": "डाळी/धान्य", "pack": "1 kg", "retail": 120, "wholesale": null, "purchase": null, "note": ""}, {"name": "वाटाणे", "category": "डाळी/धान्य", "pack": "1 kg", "retail": 100, "wholesale": null, "purchase": null, "note": ""}, {"name": "गहू", "category": "धान्य", "pack": "1 kg", "retail": 35, "wholesale": null, "purchase": null, "note": ""}, {"name": "बाजरी", "category": "धान्य", "pack": "1 kg", "retail": 35, "wholesale": null, "purchase": null, "note": ""}, {"name": "ज्वारी", "category": "धान्य", "pack": "1 kg", "retail": 40, "wholesale": null, "purchase": null, "note": ""}, {"name": "जिरा राइस", "category": "तांदूळ", "pack": "1 kg", "retail": 65, "wholesale": null, "purchase": null, "note": ""}, {"name": "चाँद तारा", "category": "तांदूळ", "pack": "1 kg", "retail": 65, "wholesale": null, "purchase": null, "note": ""}, {"name": "गंगाभोग तांदूळ", "category": "तांदूळ", "pack": "1 kg", "retail": 75, "wholesale": null, "purchase": null, "note": ""}, {"name": "इंद्रायणी तांदूळ", "category": "तांदूळ", "pack": "1 kg", "retail": 65, "wholesale": null, "purchase": null, "note": ""}, {"name": "सेला बासमती", "category": "तांदूळ", "pack": "1 kg", "retail": 70, "wholesale": null, "purchase": null, "note": ""}, {"name": "साधे तांदूळ", "category": "तांदूळ", "pack": "1 kg", "retail": 28, "wholesale": null, "purchase": null, "note": ""}, {"name": "पोहे", "category": "पोहे/पीठ", "pack": "1 kg", "retail": 65, "wholesale": null, "purchase": null, "note": ""}, {"name": "पोहे", "category": "पोहे/पीठ", "pack": "500 g", "retail": 40, "wholesale": null, "purchase": null, "note": ""}, {"name": "रवा", "category": "पोहे/पीठ", "pack": "1 kg", "retail": 55, "wholesale": null, "purchase": null, "note": ""}, {"name": "रवा", "category": "पोहे/पीठ", "pack": "500 g", "retail": 30, "wholesale": null, "purchase": null, "note": ""}, {"name": "मैदा", "category": "पोहे/पीठ", "pack": "1 kg", "retail": 55, "wholesale": null, "purchase": null, "note": ""}, {"name": "मैदा", "category": "पोहे/पीठ", "pack": "500 g", "retail": 30, "wholesale": null, "purchase": null, "note": ""}, {"name": "सुजी", "category": "पोहे/पीठ", "pack": "1 kg", "retail": 55, "wholesale": null, "purchase": null, "note": ""}, {"name": "सुजी", "category": "पोहे/पीठ", "pack": "500 g", "retail": 30, "wholesale": null, "purchase": null, "note": ""}, {"name": "बेसन", "category": "पोहे/पीठ", "pack": "1 kg", "retail": 120, "wholesale": null, "purchase": null, "note": ""}, {"name": "बेसन", "category": "पोहे/पीठ", "pack": "250 g", "retail": 30, "wholesale": null, "purchase": null, "note": ""}, {"name": "तेल पिशवी", "category": "तेल", "pack": "1 L", "retail": 155, "wholesale": null, "purchase": null, "note": ""}, {"name": "मुरली तेल पिशवी", "category": "तेल", "pack": "1 L", "retail": 160, "wholesale": null, "purchase": null, "note": ""}, {"name": "तेल पिशवी", "category": "तेल", "pack": "500 ml", "retail": 80, "wholesale": null, "purchase": null, "note": ""}, {"name": "तेल पिशवी", "category": "तेल", "pack": "200 ml", "retail": 40, "wholesale": null, "purchase": null, "note": ""}, {"name": "शेंग तेल", "category": "तेल", "pack": "1 L", "retail": 200, "wholesale": null, "purchase": null, "note": ""}, {"name": "सम्राट तेल", "category": "तेल", "pack": "1 L", "retail": 170, "wholesale": null, "purchase": null, "note": ""}, {"name": "फॉर्च्यून तेल", "category": "तेल", "pack": "1 L", "retail": 175, "wholesale": null, "purchase": null, "note": ""}, {"name": "पाम तेल", "category": "तेल", "pack": "1 L", "retail": 120, "wholesale": null, "purchase": null, "note": ""}, {"name": "राई तेल", "category": "तेल", "pack": "1 L", "retail": 180, "wholesale": null, "purchase": null, "note": ""}, {"name": "राई तेल", "category": "तेल", "pack": "500 ml", "retail": 90, "wholesale": null, "purchase": null, "note": ""}, {"name": "फॉर्च्यून तेल डबा मोठा", "category": "तेल", "pack": "मोठा डबा", "retail": 2600, "wholesale": null, "purchase": null, "note": ""}, {"name": "तूप", "category": "तूप", "pack": "100 g", "retail": 90, "wholesale": null, "purchase": null, "note": ""}, {"name": "तूप", "category": "तूप", "pack": "200 g", "retail": 180, "wholesale": null, "purchase": null, "note": ""}, {"name": "तूप", "category": "तूप", "pack": "500 g", "retail": 400, "wholesale": null, "purchase": null, "note": ""}, {"name": "तूप", "category": "तूप", "pack": "1 kg", "retail": 780, "wholesale": null, "purchase": null, "note": ""}, {"name": "साखर", "category": "किराणा", "pack": "1 kg", "retail": 55, "wholesale": null, "purchase": null, "note": ""}, {"name": "गूळ", "category": "किराणा", "pack": "500 g", "retail": 40, "wholesale": null, "purchase": null, "note": ""}, {"name": "गूळ", "category": "किराणा", "pack": "1 kg", "retail": 75, "wholesale": null, "purchase": null, "note": ""}, {"name": "खोबरे", "category": "किराणा", "pack": "1 kg", "retail": 380, "wholesale": null, "purchase": null, "note": "नेमके 1 kg; 1 kg पेक्षा कमी प्रमाणासाठी ₹400/kg"}, {"name": "खोबरे", "category": "किराणा", "pack": "1 kg पेक्षा कमी", "retail": 400, "wholesale": null, "purchase": null, "note": "वजनानुसार ₹400/kg"}, {"name": "हळद", "category": "मसाले", "pack": "100 g", "retail": 40, "wholesale": null, "purchase": null, "note": ""}, {"name": "हळद", "category": "मसाले", "pack": "200 g", "retail": 80, "wholesale": null, "purchase": null, "note": ""}, {"name": "हळद", "category": "मसाले", "pack": "1 kg", "retail": 280, "wholesale": null, "purchase": null, "note": ""}, {"name": "मिरची", "category": "मसाले", "pack": "100 g", "retail": 40, "wholesale": null, "purchase": null, "note": ""}, {"name": "मिरची", "category": "मसाले", "pack": "200 g", "retail": 80, "wholesale": null, "purchase": null, "note": ""}, {"name": "मिरची", "category": "मसाले", "pack": "1 kg", "retail": 240, "wholesale": null, "purchase": null, "note": ""}, {"name": "धणे", "category": "मसाले", "pack": "100 g", "retail": 30, "wholesale": null, "purchase": null, "note": ""}, {"name": "धणे", "category": "मसाले", "pack": "200 g", "retail": 60, "wholesale": null, "purchase": null, "note": ""}, {"name": "धणे", "category": "मसाले", "pack": "1 kg", "retail": 240, "wholesale": null, "purchase": null, "note": ""}, {"name": "महादेव मसाला", "category": "मसाले", "pack": "100 g", "retail": 35, "wholesale": null, "purchase": null, "note": ""}, {"name": "महादेव मसाला", "category": "मसाले", "pack": "200 g", "retail": 70, "wholesale": null, "purchase": null, "note": ""}, {"name": "ओवा", "category": "मसाले", "pack": "1 kg", "retail": 260, "wholesale": null, "purchase": null, "note": "1 kg पेक्षा कमी प्रमाणासाठी ₹280/kg"}, {"name": "ओवा", "category": "मसाले", "pack": "1 kg पेक्षा कमी", "retail": 280, "wholesale": null, "purchase": null, "note": "वजनानुसार"}, {"name": "बडीशेप", "category": "मसाले", "pack": "1 kg", "retail": 200, "wholesale": null, "purchase": null, "note": "1 kg पेक्षा कमी प्रमाणासाठी ₹240/kg"}, {"name": "बडीशेप", "category": "मसाले", "pack": "1 kg पेक्षा कमी", "retail": 240, "wholesale": null, "purchase": null, "note": "वजनानुसार"}, {"name": "काजू", "category": "सुका मेवा", "pack": "50 g", "retail": 50, "wholesale": null, "purchase": null, "note": ""}, {"name": "बदाम", "category": "सुका मेवा", "pack": "50 g", "retail": 60, "wholesale": null, "purchase": null, "note": ""}, {"name": "किसमिस", "category": "सुका मेवा", "pack": "100 g", "retail": 50, "wholesale": null, "purchase": null, "note": ""}, {"name": "चारोळी", "category": "सुका मेवा", "pack": "10 g", "retail": 25, "wholesale": null, "purchase": null, "note": ""}, {"name": "वेलची", "category": "सुका मेवा", "pack": "10 g", "retail": 50, "wholesale": null, "purchase": null, "note": ""}, {"name": "काजू कणी", "category": "सुका मेवा", "pack": "1 kg", "retail": 400, "wholesale": null, "purchase": null, "note": ""}, {"name": "मगज", "category": "सुका मेवा", "pack": "1 kg", "retail": 600, "wholesale": null, "purchase": null, "note": ""}, {"name": "खारीक", "category": "सुका मेवा", "pack": "1 kg", "retail": 220, "wholesale": null, "purchase": null, "note": "1 kg पेक्षा कमी प्रमाणासाठी ₹240/kg"}, {"name": "खारीक", "category": "सुका मेवा", "pack": "1 kg पेक्षा कमी", "retail": 240, "wholesale": null, "purchase": null, "note": "वजनानुसार"}, {"name": "सह्याद्री चहा", "category": "चहा", "pack": "₹5 पॅकेट", "retail": 5, "wholesale": null, "purchase": null, "note": ""}, {"name": "सह्याद्री चहा", "category": "चहा", "pack": "₹10 पॅकेट", "retail": 10, "wholesale": null, "purchase": null, "note": ""}, {"name": "सह्याद्री चहा", "category": "चहा", "pack": "100 g", "retail": 40, "wholesale": null, "purchase": null, "note": ""}, {"name": "सह्याद्री चहा", "category": "चहा", "pack": "250 g", "retail": 110, "wholesale": null, "purchase": null, "note": ""}, {"name": "सह्याद्री चहा", "category": "चहा", "pack": "1 kg", "retail": 370, "wholesale": null, "purchase": null, "note": ""}, {"name": "व्हील पावडर", "category": "डिटर्जंट", "pack": "500 g", "retail": 45, "wholesale": null, "purchase": null, "note": ""}, {"name": "व्हील पावडर", "category": "डिटर्जंट", "pack": "1 kg", "retail": 90, "wholesale": null, "purchase": null, "note": ""}, {"name": "निर्मा पावडर", "category": "डिटर्जंट", "pack": "1 kg", "retail": 80, "wholesale": null, "purchase": null, "note": ""}, {"name": "Harpic", "category": "स्वच्छता", "pack": "200 ml", "retail": 46, "wholesale": null, "purchase": null, "note": ""}, {"name": "Harpic", "category": "स्वच्छता", "pack": "500 ml", "retail": 110, "wholesale": null, "purchase": null, "note": ""}, {"name": "RIN पावडर", "category": "डिटर्जंट", "pack": "500 g", "retail": 58, "wholesale": null, "purchase": null, "note": ""}, {"name": "Ariel पावडर", "category": "डिटर्जंट", "pack": "500 g", "retail": 85, "wholesale": null, "purchase": null, "note": ""}, {"name": "सनी फिनाइल", "category": "स्वच्छता", "pack": "200 ml", "retail": 50, "wholesale": null, "purchase": null, "note": ""}, {"name": "सनी फिनाइल", "category": "स्वच्छता", "pack": "500 ml", "retail": 110, "wholesale": null, "purchase": null, "note": ""}, {"name": "₹10 साबण", "category": "साबण", "pack": "1 नग", "retail": 10, "wholesale": null, "purchase": null, "note": "सेव्ह केलेला डिफॉल्ट रिटेल दर"}, {"name": "मुरली बॉक्स", "category": "बॉक्स", "pack": "1 बॉक्स", "retail": null, "wholesale": 1510, "purchase": null, "note": ""}, {"name": "अनमोल बॉक्स", "category": "बॉक्स", "pack": "1 बॉक्स", "retail": null, "wholesale": 1490, "purchase": null, "note": ""}, {"name": "सम्राट बॉक्स", "category": "बॉक्स", "pack": "1 बॉक्स", "retail": null, "wholesale": 1600, "purchase": null, "note": ""}, {"name": "₹10 साबण", "category": "साबण", "pack": "12 नग / डझन", "retail": null, "wholesale": 110, "purchase": null, "note": "फक्त होलसेल"}, {"name": "₹5 साबण", "category": "साबण", "pack": "12 नग / डझन", "retail": null, "wholesale": 55, "purchase": null, "note": "फक्त होलसेल"}, {"name": "₹10 डिटर्जंट पावडर", "category": "डिटर्जंट", "pack": "12 पॅकेट / डझन", "retail": null, "wholesale": 110, "purchase": null, "note": "फक्त होलसेल"}, {"name": "टाटा मेट गोनी", "category": "गोनी", "pack": "50 नग", "retail": null, "wholesale": null, "purchase": 1400, "note": "खरेदी खर्च: 50 नगांसाठी ₹1,400; ₹28 प्रति नग"}];
+const $ = id => document.getElementById(id);
+let cart = [];
+let savedBills = JSON.parse(localStorage.getItem("gk_bills_v1") || "[]");
+const money = n => "₹" + Number(n).toLocaleString("en-IN",{maximumFractionDigits:2});
+const fmt = n => Number(n).toLocaleString("en-IN",{maximumFractionDigits:2});
+function priceFor(p,type){ return type==="wholesale" ? p.wholesale : p.retail; }
+function showTab(tab){
+ document.querySelectorAll("main section").forEach(s=>s.classList.toggle("hidden",s.id!==tab));
+ document.querySelectorAll("[data-tab]").forEach(b=>{b.classList.toggle("active",b.dataset.tab===tab);b.classList.toggle("secondary",b.dataset.tab!==tab)});
+ if(tab==="rates")renderRates(); if(tab==="purchase")renderPurchase(); if(tab==="history")renderHistory();
+}
+document.querySelectorAll("[data-tab]").forEach(b=>b.addEventListener("click",()=>showTab(b.dataset.tab)));
+function renderResults(){
+ const q=$("search").value.trim().toLocaleLowerCase("mr-IN");
+ const type=$("saleType").value;
+ const normalizedQ=normalizeSpokenQuery(q);
+ const queryToUse=normalizedQ || q;
+ const matches=PRODUCTS.filter(p=>{
+   const hay=(p.name+" "+p.pack+" "+p.category).toLocaleLowerCase("mr-IN");
+   return hay.includes(queryToUse) || queryToUse.includes(p.name.toLocaleLowerCase("mr-IN"));
+ }).slice(0,50);
+ $("results").innerHTML="";
+ if(!q){return}
+ if(!matches.length){$("results").innerHTML='<p class="small">वस्तू सापडली नाही. नाव/पॅकिंग तपासा.</p>';return}
+ matches.forEach((p)=>{
+   const price=priceFor(p,type);
+   const el=document.createElement("div");el.className="product";
+   const info=document.createElement("div");info.className="info";
+   info.innerHTML="<strong></strong><span class='small'></span><div class='price'></div>";
+   info.querySelector("strong").textContent=p.name;
+   info.querySelector("span").textContent="पॅकिंग / वजन: "+p.pack+" • "+p.category;
+   info.querySelector(".price").textContent=price==null?"या प्रकारचा दर उपलब्ध नाही":("दर: "+money(price)+" / "+p.pack);
+   const btn=document.createElement("button");btn.textContent=price==null?"दर नाही":"+ जोडा";btn.disabled=price==null;
+   btn.addEventListener("click",()=>addToCart(p,type));
+   el.append(info,btn);$("results").append(el);
+ });
+}
+$("search").addEventListener("input",renderResults);
+$("saleType").addEventListener("change",()=>{renderResults();renderCart()});
+$("clearSearch").addEventListener("click",()=>{$("search").value="";$("results").innerHTML="";$("voiceStatus").textContent=""});
+function addToCart(p,type){
+ const price=priceFor(p,type);
+ if(price==null){alert("या विक्री प्रकाराचा दर उपलब्ध नाही. अंदाजाने दर वापरला जाणार नाही.");return}
+ const qtyText=prompt("वस्तू: "+p.name+"\nपॅकिंग / वजन: "+p.pack+"\nदर: "+money(price)+" प्रति "+p.pack+"\nप्रमाण किती?", "1");
+ if(qtyText===null)return;
+ const qty=Number(qtyText);
+ if(!Number.isFinite(qty)||qty<=0){alert("कृपया योग्य प्रमाण भरा.");return}
+ cart.push({name:p.name,pack:p.pack,category:p.category,qty,price,amount:qty*price});
+ renderCart();
+}
+function renderCart(){
+ const root=$("cart");root.innerHTML="";
+ if(!cart.length){root.innerHTML='<p class="small">अजून वस्तू जोडलेल्या नाहीत.</p>';$("total").textContent="एकूण: ₹0";return}
+ cart.forEach((item,i)=>{
+  const line=document.createElement("div");line.className="line";
+  const desc=document.createElement("div");desc.className="desc";
+  desc.innerHTML="<strong></strong><div class='small'></div><div></div>";
+  desc.children[0].textContent=item.name;
+  desc.children[1].textContent="वजन/पॅकिंग: "+item.pack+" • प्रमाण: "+fmt(item.qty)+" • दर: "+money(item.price);
+  desc.children[2].textContent="रक्कम: "+money(item.qty*item.price);
+  const qty=document.createElement("input");qty.type="number";qty.min="0.01";qty.step="any";qty.value=item.qty;qty.setAttribute("aria-label","प्रमाण");
+  qty.addEventListener("change",()=>{let n=Number(qty.value);if(n>0&&Number.isFinite(n)){item.qty=n;renderCart()}else{qty.value=item.qty}});
+  const del=document.createElement("button");del.textContent="×";del.title="वस्तू काढा";del.onclick=()=>{cart.splice(i,1);renderCart()};
+  line.append(desc,qty,del);root.append(line);
+ });
+ const raw=cart.reduce((s,x)=>s+x.qty*x.price,0);
+ $("total").textContent="एकूण: "+money(Math.ceil(raw));
+}
+function billText(billNo){
+ const raw=cart.reduce((s,x)=>s+x.qty*x.price,0);
+ const total=Math.ceil(raw);
+ return "श्री गुरुकृपा किराणा स्टोअर्स\nकिराणा बिल\nबिल क्रमांक: "+billNo+"\nदिनांक: "+new Date().toLocaleString("en-IN")+"\nप्रकार: "+$("saleType").selectedOptions[0].text+"\n-------------------------\n"+
+ cart.map((x,i)=>(i+1)+". "+x.name+" ("+x.pack+") × "+fmt(x.qty)+" @ "+money(x.price)+" = "+money(x.qty*x.price)).join("\n")+
+ "\n-------------------------\nएकूण: "+money(total)+"\nधन्यवाद! पुन्हा भेट द्या.";
+}
+function currentBillText(){return billText("तात्पुरते")}
+$("saveBill").onclick=()=>{
+ if(!cart.length){alert("प्रथम बिलात वस्तू जोडा.");return}
+ const id="GK-"+new Date().toISOString().replace(/\D/g,"").slice(0,14);
+ const raw=cart.reduce((s,x)=>s+x.qty*x.price,0);
+ const b={id,date:new Date().toISOString(),type:$("saleType").value,items:cart.map(x=>({...x})),total:Math.ceil(raw),text:billText(id)};
+ savedBills.unshift(b);localStorage.setItem("gk_bills_v1",JSON.stringify(savedBills));
+ alert("बिल या फोनमध्ये जतन झाले: "+id);
+};
+$("shareBill").onclick=async()=>{
+ if(!cart.length){alert("प्रथम बिलात वस्तू जोडा.");return}
+ const text=currentBillText();
+ if(navigator.share){try{await navigator.share({title:"गुरुकृपा किराणा बिल",text})}catch(e){}}
+ else {location.href="https://wa.me/?text="+encodeURIComponent(text)}
+};
+$("printBill").onclick=()=>{
+ if(!cart.length){alert("प्रथम बिलात वस्तू जोडा.");return}
+ const w=window.open("","_blank");
+ if(!w){alert("ब्राउझरने पॉप-अप रोखला. Chrome मध्ये उघडून पुन्हा प्रयत्न करा.");return}
+ w.document.write("<html lang='mr'><meta charset='utf-8'><title>किराणा बिल</title><body style='font-family:system-ui,sans-serif;width:300px;margin:12px;white-space:pre-wrap'></body></html>");
+ w.document.body.textContent=currentBillText();w.document.close();w.focus();setTimeout(()=>w.print(),500);
+};
+$("emptyBill").onclick=()=>{if(confirm("सध्याचे बिल रिकामे करायचे?")){cart=[];renderCart()}};
+function renderRates(){
+ const q=$("rateSearch").value.trim().toLocaleLowerCase("mr-IN"), type=$("rateType").value;
+ const list=PRODUCTS.filter(p=>(p.name+" "+p.pack+" "+p.category).toLocaleLowerCase("mr-IN").includes(q));
+ $("rateList").innerHTML="";
+ list.forEach(p=>{
+  const price=priceFor(p,type);const d=document.createElement("div");d.className="product";
+  d.innerHTML="<div class='info'><strong></strong><span class='small'></span><div class='price'></div></div>";
+  d.querySelector("strong").textContent=p.name;d.querySelector("span").textContent=p.pack+" • "+p.category;
+  d.querySelector(".price").textContent=price==null?"दर नोंदलेला नाही":money(price);
+  $("rateList").append(d);
+ });
+}
+$("rateSearch").addEventListener("input",renderRates);$("rateType").addEventListener("change",renderRates);
+function renderPurchase(){
+ $("purchaseList").innerHTML="";
+ PRODUCTS.filter(p=>p.purchase!=null).forEach(p=>{
+  const d=document.createElement("div");d.className="product";
+  d.innerHTML="<div class='info'><strong></strong><span class='small'></span><div class='price'></div></div>";
+  d.querySelector("strong").textContent=p.name;d.querySelector("span").textContent=p.pack;
+  d.querySelector(".price").textContent=money(p.purchase)+" (नोंदवलेला एकूण खरेदी खर्च)";
+  $("purchaseList").append(d);
+ });
+}
+function renderHistory(){
+ $("historyList").innerHTML="";
+ if(!savedBills.length){$("historyList").innerHTML='<p class="small">या ब्राउझरमध्ये जतन केलेली बिले नाहीत.</p>';return}
+ savedBills.forEach(b=>{
+  const d=document.createElement("div");d.className="product";
+  const info=document.createElement("div");info.className="info";
+  const strong=document.createElement("strong");strong.textContent=b.id;
+  const span=document.createElement("span");span.className="small";span.textContent=new Date(b.date).toLocaleString("en-IN")+" • "+(b.type==="retail"?"रिटेल":"होलसेल");
+  const amt=document.createElement("div");amt.className="price";amt.textContent=money(b.total);
+  info.append(strong,span,amt);
+  const share=document.createElement("button");share.textContent="शेअर";share.onclick=()=>{if(navigator.share)navigator.share({text:b.text});else location.href="https://wa.me/?text="+encodeURIComponent(b.text)};
+  d.append(info,share);$("historyList").append(d);
+ });
+}
+$("exportBills").onclick=()=>{
+ const blob=new Blob([JSON.stringify(savedBills,null,2)],{type:"application/json"});
+ const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download="Gurukripa_Bill_History.json";a.click();URL.revokeObjectURL(url);
+};
+function normalizeSpokenQuery(raw){
+ let q = (raw || "").toLocaleLowerCase("mr-IN").trim();
+ // Common Marathi dictation variants for shop items / pack terms
+ const replacements = [
+  [/मुरली बॉक्स|मुरली बोक्स|मुरली बॉक्सेस/g, "मुरली बॉक्स"],
+  [/अनमोल बॉक्स|अनमोल बोक्स/g, "अनमोल बॉक्स"],
+  [/सम्राट बॉक्स|सम्राट बोक्स/g, "सम्राट बॉक्स"],
+  [/सनी फिनाइल|सनी फिनेल|सनी फिनाइल/g, "सनी फिनाइल"],
+  [/टाटा मेट गोनी|टाटा मेड गोनी|टाटा मेटगोनी/g, "टाटा मेट गोनी"],
+  [/होलसेल|होल सेल|होलसेल बिल|घाऊक/g, " "],
+  [/रिटेल|रिटेल बिल|किरकोळ/g, " "],
+  [/एक किलो|एक किलोग्रॅम|एक किलोग्राम/g, " "],
+  [/अर्धा किलो|अर्धा किलोग्रॅम|अर्धा किलोग्राम/g, " "],
+  [/पाव किलो|पावशेर/g, " "],
+  [/पाचशे एमएल|५०० एमएल|500 एमएल|पाचशे मिली/g, " "],
+  [/दोनशे एमएल|२०० एमएल|200 एमएल|दोनशे मिली/g, " "],
+  [/एक|दोन|तीन|चार|पाच|सहा|सात|आठ|नऊ|दहा/g, " "],
+  [/\b\d+([.,]\d+)?\b/g, " "]
+ ];
+ replacements.forEach(([pattern, value]) => q = q.replace(pattern, value));
+ return q.replace(/[.,!?।]/g, " ").replace(/\s+/g, " ").trim();
+}
+$("voiceBtn").onclick=()=>{
+ const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+ if(!SR){
+  $("voiceStatus").textContent="Chrome मध्ये थेट आवाज सेवा उपलब्ध नाही. शोध बॉक्सवर टॅप करा आणि Gboard कीबोर्डवरील 🎙 वापरा. बोललेले शब्द बॉक्समध्ये आल्यावर वस्तू शोधा.";
+  $("search").focus(); return;
+ }
+ const rec=new SR();
+ rec.lang="mr-IN";rec.interimResults=false;rec.maxAlternatives=5;
+ $("voiceStatus").textContent="ऐकत आहे… वस्तूचे नाव बोला. उदाहरण: मुरली बॉक्स.";
+ rec.onresult=e=>{
+  const alternatives=Array.from(e.results[0] || []).map(x=>x.transcript || "");
+  const raw=alternatives[0] || "";
+  const query=normalizeSpokenQuery(raw);
+  $("search").value=query || raw;
+  $("voiceStatus").textContent="ऐकले: “"+raw+"”. शोधासाठी: “"+($("search").value)+"”. खाली योग्य वस्तू निवडा.";
+  renderResults();
+  if(!$("results").children.length){
+   $("voiceStatus").textContent += " वस्तू सापडली नाही तर नाव टाइप करा किंवा आवाज पुन्हा द्या.";
+  }
+ };
+ rec.onerror=e=>{
+  const msgs={
+   "not-allowed":"मायक्रोफोन परवानगी बंद आहे. Chrome/फोन सेटिंग्जमध्ये Microphone परवानगी द्या.",
+   "no-speech":"आवाज ऐकू आला नाही. पुन्हा प्रयत्न करा.",
+   "network":"आवाज ओळख सेवेला इंटरनेट लागू शकते. Gboard मायक्रोफोन वापरून पाहा.",
+   "language-not-supported":"फोनवर Marathi (India) आवाज सेवा उपलब्ध नसू शकते. Gboard वापरा."
+  };
+  $("voiceStatus").textContent=msgs[e.error] || ("आवाज ओळख अयशस्वी ("+e.error+"). शोध बॉक्समध्ये टाइप करा किंवा Gboard 🎙 वापरा.");
+ };
+ rec.onend=()=>{};
+ try{rec.start()}catch(err){$("voiceStatus").textContent="मायक्रोफोन सुरू झाला नाही. पुन्हा दाबा किंवा Gboard 🎙 वापरा."}
+};
+renderResults();renderCart();
+</script>
+</body></html>

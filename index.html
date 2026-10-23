@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="mr">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>गुरुकृपा किराणा — बिलिंग कॅल्क्युलेटर</title>
+<style>
+:root{--purple:#5140cc;--green:#07851d;--red:#e31919;--bg:#f4f4f7}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:system-ui,"Noto Sans Devanagari",Arial,sans-serif;color:#111}
+header{background:var(--purple);color:#fff;padding:14px 16px;font-size:21px;font-weight:800}
+header small{display:block;font-size:12px;font-weight:500;opacity:.9}
+main{max-width:760px;margin:auto;padding:10px}
+.panel{background:#fff;border:1px solid #ddd;border-radius:10px;padding:12px;margin-bottom:10px}
+h3{margin:0 0 10px;font-size:16px}
+.row{display:flex;gap:8px;align-items:center;margin:7px 0}
+input,select{font:inherit;padding:10px;border:1px solid #bbb;border-radius:7px;min-width:0;background:white}
+input{width:100%}.btn{border:0;border-radius:8px;padding:11px 13px;font:inherit;font-weight:700;background:var(--purple);color:white}
+.btn.green{background:var(--green)}.btn.red{background:var(--red)}.btn.gray{background:#666}
+table{width:100%;border-collapse:collapse;font-size:14px}th,td{text-align:left;padding:8px 4px;border-bottom:1px solid #ddd}th{font-size:13px}
+.total{text-align:right;font-size:29px;font-weight:900;margin:8px 0}
+.keypad{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}.keypad button{background:white;color:#111;border:1px solid var(--purple);border-radius:8px;padding:15px 3px;font-size:20px}
+.muted{font-size:12px;color:#666}.actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+@media(max-width:420px){.row.wrap{flex-wrap:wrap}.row.wrap>*{flex:1 1 40%}th:nth-child(2),td:nth-child(2){max-width:65px}}
+@media print{
+ body{background:white}.no-print,header,.panel:not(.receipt){display:none!important}
+ main{padding:0;margin:0;max-width:none}.receipt{border:0;padding:0;margin:0}
+ .receipt h2{text-align:center;font-size:16px;margin:0}.receipt p{text-align:center;margin:2px;font-size:11px}
+ table{font-size:11px}th,td{padding:4px 2px;border-bottom:1px dashed #aaa}.total{font-size:17px}
+ @page{size:72mm auto;margin:3mm}
+}
+</style>
+</head>
+<body>
+<header>गुरुकृपा किराणा स्टोअर <small>Professional Billing Calculator · Offline demo</small></header>
+<main>
+<section class="panel no-print">
+<h3>नवीन बिल — वस्तू जोडा</h3>
+<div class="row wrap"><input id="name" placeholder="वस्तूचे नाव"><input id="rate" type="number" min="0" step="0.01" placeholder="दर ₹"><input id="qty" type="number" min="0.001" step="0.001" value="1" placeholder="प्रमाण"></div>
+<div class="row"><select id="unit"><option>नग</option><option>kg</option><option>g</option><option>L</option><option>ml</option><option>पॅकेट</option></select><button class="btn green" onclick="addItem()">+ वस्तू जोडा</button><button class="btn gray" onclick="clearBill()">नवीन बिल</button></div>
+<div class="muted">दर × प्रमाण = रक्कम. वजनाच्या वस्तूंसाठी प्रमाण 0.5, 0.25 इ. टाकू शकता.</div>
+</section>
+<section class="panel no-print">
+<h3>कॅल्क्युलेटर</h3>
+<div class="row"><input id="expr" placeholder="उदा. 2 + 69 + 78" value=""><button class="btn" onclick="calc()">=</button></div>
+<div class="total" id="calcResult">₹0.00</div>
+<div class="keypad">
+<button onclick="key('7')">7</button><button onclick="key('8')">8</button><button onclick="key('9')">9</button><button onclick="key('/')">÷</button>
+<button onclick="key('4')">4</button><button onclick="key('5')">5</button><button onclick="key('6')">6</button><button onclick="key('*')">×</button>
+<button onclick="key('1')">1</button><button onclick="key('2')">2</button><button onclick="key('3')">3</button><button onclick="key('-')">−</button>
+<button onclick="key('0')">0</button><button onclick="key('.')">.</button><button onclick="key('+')">+</button><button onclick="key('clear')">C</button>
+</div>
+</section>
+<section class="panel">
+<h3>बिलातील वस्तू</h3>
+<table><thead><tr><th>वस्तू</th><th>दर</th><th>प्रमाण</th><th>एकूण</th><th class="no-print"></th></tr></thead><tbody id="items"></tbody></table>
+<div class="total">एकूण: ₹<span id="total">0.00</span></div>
+<div class="row wrap no-print"><input id="received" type="number" placeholder="मिळालेली रक्कम ₹"><select id="payment"><option>Cash</option><option>UPI</option><option>Bank</option><option>Cheque</option></select></div>
+<div class="row no-print"><span>परत द्यायचे: ₹<b id="change">0.00</b></span></div>
+</section>
+<section class="panel receipt" id="receipt">
+<h2>श्री गुरुकृपा किराणा स्टोअर</h2><p>किराणा बिल</p><p id="date"></p><hr>
+<table><thead><tr><th>वस्तू</th><th>दर</th><th>प्रमाण</th><th>₹</th></tr></thead><tbody id="receiptItems"></tbody></table>
+<div class="total">एकूण ₹<span id="receiptTotal">0.00</span></div>
+<p id="receiptPay"></p><p>धन्यवाद! पुन्हा भेट द्या.</p>
+</section>
+<section class="panel no-print">
+<div class="actions"><button class="btn green" onclick="printBill()">🖨 बिल प्रिंट / PDF</button><button class="btn" onclick="shareBill()">WhatsApp / शेअर</button></div>
+<p class="muted">टीप: हा पहिला ऑफलाइन वेब प्रोटोटाइप आहे. प्रिंट बटण Android print dialog उघडते; Epson USB OTG/RawBT थेट प्रिंटिंगसाठी स्वतंत्र native Android integration आणि प्रत्यक्ष चाचणी आवश्यक आहे.</p>
+</section>
+</main>
+<script>
+let items=[];
+const money=n=>(Number(n)||0).toFixed(2);
+function addItem(){let name=document.getElementById('name').value.trim(),rate=Number(document.getElementById('rate').value),qty=Number(document.getElementById('qty').value),unit=document.getElementById('unit').value;if(!name){alert('वस्तूचे नाव लिहा');return}if(!(rate>=0)||!(qty>0)){alert('योग्य दर आणि प्रमाण लिहा');return}items.push({name,rate,qty,unit});document.getElementById('name').value='';document.getElementById('rate').value='';document.getElementById('qty').value='1';render();}
+function removeItem(i){items.splice(i,1);render()}
+function total(){return items.reduce((s,x)=>s+x.rate*x.qty,0)}
+function render(){let body=document.getElementById('items'),rb=document.getElementById('receiptItems');body.innerHTML='';rb.innerHTML='';items.forEach((x,i)=>{let amount=x.rate*x.qty;body.insertAdjacentHTML('beforeend',`<tr><td>${esc(x.name)}<div class="muted">${x.unit}</div></td><td>${money(x.rate)}</td><td>${x.qty} ${x.unit}</td><td>${money(amount)}</td><td class="no-print"><button class="btn red" onclick="removeItem(${i})">×</button></td></tr>`);rb.insertAdjacentHTML('beforeend',`<tr><td>${esc(x.name)}</td><td>${money(x.rate)}</td><td>${x.qty}${x.unit}</td><td>${money(amount)}</td></tr>`)});let t=total();document.getElementById('total').textContent=money(t);document.getElementById('receiptTotal').textContent=money(t);document.getElementById('receiptPay').textContent='पेमेंट: '+document.getElementById('payment').value;document.getElementById('date').textContent=new Date().toLocaleString('en-IN');changeCalc();}
+function esc(s){return s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function clearBill(){if(confirm('सध्याचे बिल काढून नवीन बिल सुरू करायचे?')){items=[];render()}}
+function changeCalc(){let t=total(),r=Number(document.getElementById('received').value)||0;document.getElementById('change').textContent=money(Math.max(0,r-t))}
+function key(k){let e=document.getElementById('expr');if(k==='clear')e.value='';else e.value+=k;e.focus()}
+function calc(){let s=document.getElementById('expr').value.trim();if(!s)return;try{if(!/^[0-9+\-*/(). %]+$/.test(s))throw 0;let v=Function('"use strict";return ('+s.replace(/%/g,'/100')+')')();if(!Number.isFinite(v))throw 0;document.getElementById('calcResult').textContent='₹'+money(v)}catch(e){alert('गणित तपासा')}}
+function printBill(){render();window.print()}
+function shareBill(){let txt='श्री गुरुकृपा किराणा स्टोअर\\nकिराणा बिल\\n'+items.map(x=>`${x.name}: ₹${money(x.rate)} × ${x.qty} ${x.unit} = ₹${money(x.rate*x.qty)}`).join('\\n')+'\\nएकूण: ₹'+money(total())+'\\nधन्यवाद!';if(navigator.share)navigator.share({text:txt}).catch(()=>{});else if(navigator.clipboard)navigator.clipboard.writeText(txt).then(()=>alert('बिल कॉपी झाले; WhatsApp मध्ये पेस्ट करा.'));else alert(txt)}
+document.getElementById('received').addEventListener('input',changeCalc);document.getElementById('payment').addEventListener('change',render);render();
+</script>
+</body></html>
